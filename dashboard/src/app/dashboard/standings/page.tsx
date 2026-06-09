@@ -3,6 +3,7 @@
 import { useDataStore } from "@/stores/useDataStore";
 
 import NumberDiff from "@/components/NumberDiff";
+import SeasonStandings from "@/components/SeasonStandings";
 import Image from "next/image";
 
 export default function Standings() {
@@ -13,13 +14,10 @@ export default function Standings() {
 
 	const isRace = useDataStore((state) => state.state?.SessionInfo?.Type === "Race");
 
+	// The live feed only emits ChampionshipPrediction during a race. Outside a
+	// race, fall back to the official season-to-date standings (Jolpica-F1).
 	if (!isRace) {
-		return (
-			<div className="flex h-full w-full flex-col items-center justify-center">
-				<p>championship standings unavailable</p>
-				<p className="text-sm text-zinc-500">currently only available during a race</p>
-			</div>
-		);
+		return <SeasonStandings />;
 	}
 
 	return (
