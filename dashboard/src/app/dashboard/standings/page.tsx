@@ -12,11 +12,12 @@ export default function Standings() {
 
 	const drivers = useDataStore((state) => state.state?.DriverList);
 
-	const isRace = useDataStore((state) => state.state?.SessionInfo?.Type === "Race");
-
-	// The live feed only emits ChampionshipPrediction during a race. Outside a
-	// race, fall back to the official season-to-date standings (Jolpica-F1).
-	if (!isRace) {
+	// The live feed only emits ChampionshipPrediction during part of a race — even
+	// mid-race it is often absent. Whenever the live predicted standings aren't
+	// actually being broadcast, fall back to the official season-to-date standings
+	// (Jolpica-F1) so the page is never just empty skeletons.
+	const hasLivePrediction = !!driverStandings && Object.keys(driverStandings).length > 0;
+	if (!hasLivePrediction) {
 		return <SeasonStandings />;
 	}
 
