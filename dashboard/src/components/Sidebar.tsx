@@ -24,6 +24,10 @@ const liveTimingItems = [
 		name: "Track Map",
 	},
 	{
+		href: "/dashboard/f1-tv",
+		name: "F1 TV",
+	},
+	{
 		href: "/dashboard/standings",
 		name: "Standings",
 	},
@@ -142,16 +146,6 @@ export default function Sidebar({ connected }: Props) {
 
 						<Item target="_blank" item={{ href: "/schedule", name: "Schedule" }} />
 						<Item target="_blank" item={{ href: "/help", name: "Help" }} />
-						<Item target="_blank" item={{ href: "/", name: "Home" }} />
-					</div>
-
-					<p className="mt-4 p-2 text-sm text-zinc-500">Links</p>
-
-					<div className="flex flex-col gap-1">
-						<Item target="_blank" item={{ href: "https://github.com/slowlydev/f1-dash", name: "Github" }} />
-						<Item target="_blank" item={{ href: "https://discord.gg/unJwu66NuB", name: "Discord" }} />
-						<Item target="_blank" item={{ href: "https://buymeacoffee.com/slowlydev", name: "Buy me a coffee" }} />
-						<Item target="_blank" item={{ href: "https://github.com/sponsors/slowlydev", name: "Sponsor me" }} />
 					</div>
 				</nav>
 			</motion.div>

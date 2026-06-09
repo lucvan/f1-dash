@@ -1,7 +1,9 @@
 'use client';
 
 import { type ReactNode } from 'react';
+import { usePathname } from 'next/navigation';
 import { AnimatePresence, motion } from 'motion/react';
+import clsx from 'clsx';
 
 import { useDataEngine } from '@/hooks/useDataEngine';
 import { useWakeLock } from '@/hooks/useWakeLock';
@@ -11,6 +13,7 @@ import { useSocket } from '@/hooks/useSocket';
 import { useSettingsStore } from '@/stores/useSettingsStore';
 import { useSidebarStore } from '@/stores/useSidebarStore';
 import { useDataStore } from '@/stores/useDataStore';
+import { useF1tvStore } from '@/stores/useF1tvStore';
 
 import Sidebar from '@/components/Sidebar';
 import SidenavButton from '@/components/SidenavButton';
@@ -20,6 +23,7 @@ import TrackInfo from '@/components/TrackInfo';
 import DelayInput from '@/components/DelayInput';
 import DelayTimer from '@/components/DelayTimer';
 import ConnectionStatus from '@/components/ConnectionStatus';
+import FloatingPlayer from '@/components/FloatingPlayer';
 
 type Props = {
 	children: ReactNode;
@@ -37,8 +41,16 @@ export default function DashboardLayout({ children }: Props) {
 
 	const ended = useDataStore(({ state }) => state?.SessionStatus?.Status === 'Ends');
 
+	// Floating F1 TV mini-player: shown when toggled on, except on the F1 TV page
+	// itself (where the stream is already the main content).
+	const pathname = usePathname();
+	const floatingOpen = useF1tvStore((state) => state.floatingOpen);
+	const showFloating = floatingOpen && pathname !== '/dashboard/f1-tv';
+
 	return (
 		<div className="flex h-screen w-full md:pt-2 md:pr-2 md:pb-2">
+			{showFloating && <FloatingPlayer />}
+
 			<Sidebar key="sidebar" connected={connected} />
 
 			<motion.div layout="size" className="flex h-full w-full flex-1 flex-col md:gap-2">
@@ -97,8 +109,29 @@ function MobileStaticBar({ show, connected }: { show: boolean; connected: boolea
 				<ConnectionStatus connected={connected} />
 			</div>
 
-			{show && <TrackInfo />}
+			<div className="flex items-center gap-2">
+				<F1TvToggle />
+				{show && <TrackInfo />}
+			</div>
 		</div>
+	);
+}
+
+function F1TvToggle() {
+	const floatingOpen = useF1tvStore((state) => state.floatingOpen);
+	const toggle = useF1tvStore((state) => state.toggle);
+
+	return (
+		<button
+			onClick={() => toggle()}
+			title="Toggle F1 TV mini-player"
+			className={clsx('shrink-0 rounded-lg px-2 py-1 text-sm', {
+				'bg-zinc-700 text-white': floatingOpen,
+				'text-zinc-400 hover:bg-zinc-800': !floatingOpen,
+			})}
+		>
+			📺 F1 TV
+		</button>
 	);
 }
 
@@ -120,7 +153,10 @@ function DesktopStaticBar({ show }: { show: boolean }) {
 
 			<div className="hidden md:items-center lg:flex">{show && <WeatherInfo />}</div>
 
-			<div className="flex justify-end">{show && <TrackInfo />}</div>
+			<div className="flex items-center justify-end gap-2">
+				<F1TvToggle />
+				{show && <TrackInfo />}
+			</div>
 		</div>
 	);
 }
