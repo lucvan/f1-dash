@@ -1,10 +1,13 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { forwardRef, useEffect, useRef } from "react";
 
 // Plays the F1 TV stream served by this app's own /f1tv-stream proxy (same
 // origin). Uses native HLS on Safari/iOS, hls.js (loaded from CDN) elsewhere.
 // Mirrors the tuning + error-recovery used by the TV app's own player.
+//
+// Forwards a ref to the underlying <video> so callers (e.g. the delay-sync
+// calibration tool) can grab frames — readable because the media is same-origin.
 
 const SRC = "/f1tv-stream/index.m3u8";
 
@@ -41,11 +44,20 @@ function loadHls(): Promise<HlsCtor | null> {
 	return hlsLoader;
 }
 
-export default function StreamPlayer({ className }: { className?: string }) {
-	const videoRef = useRef<HTMLVideoElement | null>(null);
+const StreamPlayer = forwardRef<HTMLVideoElement, { className?: string }>(function StreamPlayer(
+	{ className },
+	forwardedRef,
+) {
+	const innerRef = useRef<HTMLVideoElement | null>(null);
+
+	const setRefs = (el: HTMLVideoElement | null) => {
+		innerRef.current = el;
+		if (typeof forwardedRef === "function") forwardedRef(el);
+		else if (forwardedRef) forwardedRef.current = el;
+	};
 
 	useEffect(() => {
-		const video = videoRef.current;
+		const video = innerRef.current;
 		if (!video) return;
 
 		let hls: HlsInstance | null = null;
@@ -113,5 +125,7 @@ export default function StreamPlayer({ className }: { className?: string }) {
 		};
 	}, []);
 
-	return <video ref={videoRef} className={className} controls autoPlay muted playsInline />;
-}
+	return <video ref={setRefs} className={className} controls autoPlay muted playsInline crossOrigin="anonymous" />;
+});
+
+export default StreamPlayer;
